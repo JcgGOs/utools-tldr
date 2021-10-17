@@ -1,0 +1,11 @@
+{
+    "preload": "preload.js",
+	"logo": "logo.png",
+	"features": [
+		{
+		  "code": "tlnr",
+		  "explain": "hello world 2",
+			"cmds":["tlnr", "你好"]
+		}
+	]
+}
