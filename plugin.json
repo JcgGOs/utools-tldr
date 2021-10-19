@@ -1,11 +1,14 @@
 {
     "preload": "preload.js",
-	"logo": "logo.png",
+	"version":"0.0.1",
+	"author":"韭菜",
+	"homepage":"http://github.com/tantao700/utools-tldr",
+	"logo": "assets/logo.png",
 	"features": [
 		{
-		  "code": "tlnr",
-		  "explain": "hello world 2",
-			"cmds":["tlnr", "你好"]
+		  "code": "tldr",
+		  "explain": "太长不想看, Too Long Didn't Read",
+			"cmds":["tldr", "tl"]
 		}
 	]
 }
