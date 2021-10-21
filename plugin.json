@@ -1,4 +1,5 @@
 {
+	"pluginName":"tl;dr",
     "preload": "preload.js",
 	"version":"0.0.1",
 	"author":"韭菜",
@@ -8,7 +9,11 @@
 		{
 		  "code": "tldr",
 		  "explain": "太长不想看, Too Long Didn't Read",
-			"cmds":["tldr", "tl"]
+			"cmds":["tldr", "tl",{
+				"type": "over",
+				"label": "tl;dr",
+				"maxLength": 5000
+			  }]
 		}
 	]
 }

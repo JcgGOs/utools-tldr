@@ -18,7 +18,11 @@ window.exports = {
       args: {
          // 进入插件时调用（可选）
          enter: (action, callbackSetList) => {
-
+            setTimeout(() => {
+               if(action.type==='over'){
+                  utools.setSubInputValue(action.payload);
+               }
+            }, 5); 
          },
          // 子输入框内容变化时被调用 可选 (未设置则无搜索)
          search: (action, searchWord, callbackSetList) => {
@@ -74,7 +78,7 @@ window.exports = {
                      ])
                   })
 
-            }, 500);
+            }, 200);
 
          },
          // 用户选择列表中某个条目时被调用
