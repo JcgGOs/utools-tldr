@@ -22,6 +22,7 @@ window.exports = {
          },
          // 子输入框内容变化时被调用 可选 (未设置则无搜索)
          search: (action, searchWord, callbackSetList) => {
+            console.info('==>',searchWord)
             if (searchWord.length < 2) {
                return
             }
@@ -53,11 +54,12 @@ window.exports = {
                   return;
                }
 
+               command.target = tldr.filterTarget(command, _config)
                tldr.requestCmd(command, _config)
                   .then(function (body) {
                      var object = JSON.parse(body)
                      var body_content = Buffer.from(object.content, object.encoding).toString('UTF-8')
-                     var items = tldr.parseContent(body_content)
+                     var items = tldr.parseContent(body_content, command)
                      callbackSetList(items)
                   })
                   .catch(function (err) {

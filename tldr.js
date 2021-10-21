@@ -1,8 +1,9 @@
 const http = require("https")
+const { platform } = require("os")
 
-function httpOptions(cmd, api, lang, platform) {
-    platform = platform || 'common'
-    lang = (lang === 'zh') ? '.zh' : ''
+function httpOptions(cmd, api, target) {
+    let platform = target.os || 'common'
+    let lang = (target.language === 'zh') ? '.zh' : ''
     var _options = {
         method: 'GET',
         headers: {
@@ -25,31 +26,36 @@ function httpOptions(cmd, api, lang, platform) {
     _options['path'] = _options['path'].replace('_lang_', lang).replace('_platform_', platform).replace('_cmd_', cmd)
     console.info('https://' + _options['host'] + _options['path'])
     return _options;
+}
 
+
+function filterTarget(cmd, config) {
+
+    if (cmd.targets.length == 1) {
+        return cmd.targets[0]
+    } else {
+        let _platform = cmd.platform[0]
+        let _lang = 'en'
+        if (cmd.language.indexOf(config.lang) > -1) {
+            _lang = config.lang
+        }
+
+        if (!_lang) {
+            return cmd.targets[cmd.targets.length - 1]
+        } else {
+            return {
+                os: _platform,
+                language: _lang
+            }
+        }
+    }
 }
 
 function requestCmd(cmd, config) {
-    let lang = false
-    let platform = false
-    console.info(cmd)
-    if (cmd.targets.length == 1) {
-        lang = cmd.targets[0].language
-        platform = cmd.targets[0].os
-    } else {
-        platform = cmd.platform[0]
-        if (cmd.language.indexOf(config.lang) > -1) {
-            lang = config.lang
-        }
 
-        if (!lang) {
-            let target = cmd.targets[cmd.targets.length - 1]
-            lang = target.language
-            platform = target.os
-        }
-    }
     return new Promise(function (resolve, reject) {
         var req = http.get(
-            httpOptions(cmd.name, config.api, lang, platform),
+            httpOptions(cmd.name, config.api, cmd.target),
             function (res) {
                 // reject on bad status
                 if (Math.floor(res.statusCode / 100) !== 2) {
@@ -93,7 +99,7 @@ function requestCmd(cmd, config) {
 }
 
 
-function parseContent(body) {
+function parseContent(body, cmd) {
     var lines = body.split('\n')
 
     var items = []
@@ -112,6 +118,9 @@ function parseContent(body) {
             item.title = line.replaceAll('`', '')
         }
         else if (line == '' && !!item.title && !!item.description) {
+            if(cmd.target){
+                item.icon = 'assets/' + cmd.target.os + '.png'
+            }
             items.push(item)
             item = {
                 title: '',
@@ -175,5 +184,6 @@ function getSettings(config) {
 module.exports = {
     parseContent,
     requestCmd,
+    filterTarget,
     getSettings
 }
