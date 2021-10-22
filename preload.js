@@ -1,16 +1,11 @@
-const path = require('path')
-const fs = require('fs')
 const tldr = require('./tldr.js')
 
-const indexes = path.join(__dirname, 'indexes.json')
 const _config = {
    lang: 'zh',
-   platform: 'common',
    api: 'gitee'
 }
 // 延时ID。
 let delayId = null;
-var indexContent = fs.readFileSync(indexes)
 
 window.exports = {
    "tldr": {
@@ -26,7 +21,7 @@ window.exports = {
          },
          // 子输入框内容变化时被调用 可选 (未设置则无搜索)
          search: (action, searchWord, callbackSetList) => {
-            console.info('==>',searchWord)
+            console.info('search', searchWord)
             if (searchWord.length < 2) {
                return
             }
@@ -37,48 +32,12 @@ window.exports = {
                   return;
                }
 
-               if (searchWord.length < 2) {
-                  return
+               let searchTerm={
+                  lang:_config.lang,
+                  api:_config.api
                }
-
-               searchWord = searchWord.replace(' ', '-')
-
-               var indexer = JSON.parse(indexContent)
-               var command = false;
-
-               for (let i = 0; i < indexer.commands.length; i++) {
-                  const cmd = indexer.commands[i]
-                  if (cmd.name === searchWord) {
-                     command = cmd
-                     break
-                  }
-               }
-
-               if (!command) {
-                  return;
-               }
-
-               command.target = tldr.filterTarget(command, _config)
-               tldr.requestCmd(command, _config)
-                  .then(function (body) {
-                     var object = JSON.parse(body)
-                     var body_content = Buffer.from(object.content, object.encoding).toString('UTF-8')
-                     var items = tldr.parseContent(body_content, command)
-                     callbackSetList(items)
-                  })
-                  .catch(function (err) {
-                     console.info(err)
-                     callbackSetList([
-                        {
-                           title: err.msg + ' : ' + _config.api + ',' + _config.lang + ',' + _config.platform,
-                           description: err.code,
-                           icon: 'assets/' + _config.api + '.png', // 图标
-                           url: ''
-                        }
-                     ])
-                  })
-
-            }, 200);
+               tldr.search(searchWord, searchTerm, callbackSetList)
+            }, 500);
 
          },
          // 用户选择列表中某个条目时被调用
@@ -86,7 +45,16 @@ window.exports = {
             if (['api', 'lang'].indexOf(itemData.description) > -1) {
                _config[itemData.description] = itemData.url
                callbackSetList(tldr.getSettings(_config))
-            } else {
+            } 
+            else if ('platform' == itemData.description) {
+               let searchTerm={
+                  lang:_config.lang,
+                  api:_config.api,
+                  os:itemData.url.os
+               }
+               tldr.search(itemData.url.searchWord, searchTerm, callbackSetList)
+            }
+            else {
                window.utools.copyText(itemData.title)
             }
          },
