@@ -3,6 +3,20 @@ const path = require('path')
 const fs = require('fs')
 const indexes = path.join(__dirname, 'indexes.json')
 
+const _messages = function (key, lang, cmd) {
+    lang = lang || 'zh'
+    cmd = cmd || ''
+    var _msgMap = {
+        '404.zh': '命令没有找到 ' + cmd,
+        '404.en': 'Command Not Found ' + cmd,
+        '500.zh': '请求出错' + cmd,
+        '500.en': 'Request Error' + cmd,
+        '600.zh': '请选择一个平台',
+        '600.en': 'Please Choose OS platfrom',
+    }
+    return _msgMap[key + '.' + lang]
+}
+
 var _indexer
 
 function httpOptions(cmd, target) {
@@ -63,23 +77,21 @@ function search(searchWord, config, callbackSetList) {
     
 
     if (!command) {
-        let message = config.lang === 'zh' ? '命令没找到呢' : 'Command Not Found'
-        callbackSetList({
-            title: message,
+        callbackSetList([{
+            title: _messages(404, config.lang, searchWord),
             description: config.lang + ',' + config.os,
             icon: icon(config.api), // 图标
-        })
+        }])
         return
     }
 
     let platforms = command.platform
-    if (!config.os&&platforms.length > 1) {
+    if (!config.os && platforms.length > 1) {
         let items = []
         for (var i = 0; i < platforms.length; i++) {
-            let message = config.lang === 'zh' ? '请选择一个平台' : 'Please Choose A Platform'
             items.push(
                 {
-                    title: message,
+                    title: _messages(600, config.lang),
                     description: 'platform',
                     icon: icon(platforms[i]), // 图标
                     url: {
@@ -90,7 +102,7 @@ function search(searchWord, config, callbackSetList) {
             )
         }
         callbackSetList(items)
-        return 
+        return
     }
 
     //filter target
@@ -130,7 +142,7 @@ function filterTarget(cmd, config) {
         }
 
         if (!target) {
-            target = cmd.targets[cmd.targets - 1]
+            target = cmd.targets[cmd.targets.length - 1]
         }
     }
 
@@ -147,10 +159,9 @@ function requestCmd(cmd, config) {
             function (res) {
                 // reject on bad status
                 if (Math.floor(res.statusCode / 100) !== 2) {
-                    console.info(res.headers)
                     let err = {
                         code: res.statusCode,
-                        msg: 404 === res.statusCode ? 'NO found `' + cmd + '`' : (res.body)
+                        msg: _messages(res.statusCode, config.lang, cmd.name)
                     }
                     return reject(err);
                 }
@@ -166,7 +177,7 @@ function requestCmd(cmd, config) {
                         if (content === '[]') {
                             let err = {
                                 code: res.statusCode,
-                                msg: 'NO found `' + cmd + '`'
+                                msg: _messages(404, config.lang, cmd.name)
                             }
                             return reject(err);
                         }
@@ -179,7 +190,7 @@ function requestCmd(cmd, config) {
             });
 
         req.on('error', function (err) {// reject on request error
-            reject(err); // This is not a "Second reject", just a different sort of failure
+            reject(_messages(500, config.lang, err)); // This is not a "Second reject", just a different sort of failure
         });
 
         req.end(); // IMPORTANT
@@ -206,9 +217,7 @@ function parseContent(body, cmd, os) {
             item.title = line.replaceAll('`', '')
         }
         else if (line == '' && !!item.title && !!item.description) {
-            if(cmd.target){
-                item.icon = icon(os)
-            }
+            item.icon = !!cmd.os ? icon(os) : icon(cmd.platform[0])
             items.push(item)
             item = {
                 title: '',
@@ -223,7 +232,6 @@ function parseContent(body, cmd, os) {
 }
 
 function getSettings(config) {
-    console.info(config)
     let _settings = [
         {
             title: 'Github',
