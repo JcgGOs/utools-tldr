@@ -11,7 +11,7 @@
 		  "explain": "快查例子, Too Long Didn't Read",
 			"cmds":["tldr", "tl",{
 				"type": "over",
-				"label": "tl;dr",
+				"label": "tldr",
 				"maxLength": 5000
 			  }]
 		}

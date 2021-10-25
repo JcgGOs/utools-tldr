@@ -21,7 +21,7 @@ var _indexer
 
 function httpOptions(cmd, target) {
     let platform = target.os || 'common'
-    let lang = (target.lang === 'zh') ? '.zh' : ''
+    let lang = (target.language === 'zh') ? '.zh' : ''
     var _options = {
         method: 'GET',
         headers: {
@@ -51,8 +51,7 @@ function icon(name){
 }
 
 function search(searchWord, config, callbackSetList) {
-    console.info(searchWord,'....................')
-    
+
     //filter
     if (searchWord.length < 2) {
         return
@@ -138,6 +137,7 @@ function filterTarget(cmd, config) {
             let _target = cmd.targets[i]
             if (_os === _target.os && _lang === _target.language) {
                 target = _target
+                break
             }
         }
 
@@ -217,7 +217,7 @@ function parseContent(body, cmd, os) {
             item.title = line.replaceAll('`', '')
         }
         else if (line == '' && !!item.title && !!item.description) {
-            item.icon = !!cmd.os ? icon(os) : icon(cmd.platform[0])
+            item.icon = !!os ? icon(os) : icon(cmd.platform[0])
             items.push(item)
             item = {
                 title: '',
@@ -265,7 +265,6 @@ function getSettings(config) {
 
             if (item.url === v) {
                 item.title = item.title + '   *'
-                console.info(item)
                 break
             }
         }
